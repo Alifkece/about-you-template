@@ -1,7 +1,8 @@
 /**
  * Compresses/resizes an image file in the browser before upload, to keep
- * Firebase Storage usage (free tier: 5GB total, 1GB/day download) reasonable
- * even with many full-resolution phone photos.
+ * Cloudinary Free-tier usage (25 monthly credits ~ 25GB combined
+ * storage/bandwidth/transforms) reasonable even with many full-resolution
+ * phone photos.
  *
  * Falls back to returning the original file untouched if run in a non-browser
  * environment, or if compression fails for any reason — compression is a
