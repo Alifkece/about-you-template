@@ -30,26 +30,48 @@ export interface ExperienceRefs {
  */
 export function useExperienceEngine(refs: ExperienceRefs, data: SiteData) {
   useEffect(() => {
-    const audio = refs.audio.current;
-    const startOverlay = refs.startOverlay.current;
-    const startBtn = refs.startBtn.current;
-    const pauseIndicator = refs.pauseIndicator.current;
+    const audioRef = refs.audio.current;
+    const startOverlayRef = refs.startOverlay.current;
+    const startBtnRef = refs.startBtn.current;
+    const pauseIndicatorRef = refs.pauseIndicator.current;
     const filmTrackSlantedUp = refs.filmTrackSlantedUp.current;
     const filmTrackSlantedDown = refs.filmTrackSlantedDown.current;
     const filmTrackHorizontal = refs.filmTrackHorizontal.current;
-    const infiniteCamera = refs.infiniteCamera.current;
-    const infiniteCanvas = refs.infiniteCanvas.current;
+    const infiniteCameraRef = refs.infiniteCamera.current;
+    const infiniteCanvasRef = refs.infiniteCanvas.current;
     const cardProgressFill = refs.cardProgressFill.current;
     const cardTimeCurrent = refs.cardTimeCurrent.current;
     const cardTimeTotal = refs.cardTimeTotal.current;
     const cardProgressTrack = refs.cardProgressTrack.current;
-    const rootEl = refs.root.current;
+    const rootElRef = refs.root.current;
 
-    if (!audio || !startOverlay || !startBtn || !pauseIndicator || !infiniteCamera || !infiniteCanvas || !rootEl) {
+    if (
+      !audioRef ||
+      !startOverlayRef ||
+      !startBtnRef ||
+      !pauseIndicatorRef ||
+      !infiniteCameraRef ||
+      !infiniteCanvasRef ||
+      !rootElRef
+    ) {
       // Refs not ready yet (shouldn't happen post-mount, but keep this a no-op
       // rather than throwing, matching the original script's defensive style).
       return;
     }
+
+    // Rebind to concrete, non-nullable types right after the guard above.
+    // This is real static type-safety (each variable's declared type is
+    // simply `HTMLxElement`, never a union with `null`) rather than a `!`
+    // assertion — so every nested function/closure declared below can
+    // reference these directly, with no per-closure re-checking and no
+    // possibility of a "possibly null" error anywhere in this file.
+    const audio: HTMLAudioElement = audioRef;
+    const startOverlay: HTMLDivElement = startOverlayRef;
+    const startBtn: HTMLButtonElement = startBtnRef;
+    const pauseIndicator: HTMLDivElement = pauseIndicatorRef;
+    const infiniteCamera: HTMLDivElement = infiniteCameraRef;
+    const infiniteCanvas: HTMLDivElement = infiniteCanvasRef;
+    const rootEl: HTMLDivElement = rootElRef;
 
     // ─── Subtitle bar (created + appended, exactly as the original did to
     // document.body — here appended to the component's own root instead, so
@@ -196,7 +218,7 @@ export function useExperienceEngine(refs: ExperienceRefs, data: SiteData) {
       const driftX = Math.sin(t * 0.18) * 1.0;
       const driftY = Math.sin(t * 0.13) * 0.7;
 
-      infiniteCamera!.style.transform =
+      infiniteCamera.style.transform =
         `translate3d(${(camX + driftX).toFixed(2)}px,${(camY + driftY).toFixed(2)}px,0) ` +
         `rotate(${camRot.toFixed(3)}deg)`;
     }
@@ -214,7 +236,7 @@ export function useExperienceEngine(refs: ExperienceRefs, data: SiteData) {
     let lyrics: LyricWord[] = [];
 
     function buildScenes() {
-      infiniteCanvas!.innerHTML = '';
+      infiniteCanvas.innerHTML = '';
       scenes = [];
       subtitleSpans = [];
 
@@ -285,7 +307,7 @@ export function useExperienceEngine(refs: ExperienceRefs, data: SiteData) {
           sceneEl.appendChild(photoWrap);
           sceneEl.appendChild(lyricEl);
         }
-        infiniteCanvas!.appendChild(sceneEl);
+        infiniteCanvas.appendChild(sceneEl);
 
         scenes.push({
           idx: sceneIdx,
@@ -309,8 +331,8 @@ export function useExperienceEngine(refs: ExperienceRefs, data: SiteData) {
       });
 
       const totalH = scenes.length * SCENE_GAP_Y + vH;
-      infiniteCanvas!.style.height = `${totalH}px`;
-      infiniteCanvas!.style.width = `${vW * 1.8}px`;
+      infiniteCanvas.style.height = `${totalH}px`;
+      infiniteCanvas.style.width = `${vW * 1.8}px`;
     }
 
     function setFilmTracksPlayState(state: 'running' | 'paused') {
@@ -342,7 +364,7 @@ export function useExperienceEngine(refs: ExperienceRefs, data: SiteData) {
     let animFrameId: number | null = null;
 
     function syncLoop() {
-      const t = audio!.currentTime;
+      const t = audio.currentTime;
 
       let newActiveScene: Scene | null = null;
       for (let i = scenes.length - 1; i >= 0; i--) {
@@ -429,27 +451,27 @@ export function useExperienceEngine(refs: ExperienceRefs, data: SiteData) {
 
     function updateProgress() {
       if (isSeekingProgress) return;
-      const pct = audio!.duration ? (audio!.currentTime / audio!.duration) * 100 : 0;
+      const pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
       if (cardProgressFill) cardProgressFill.style.width = pct + '%';
-      if (cardTimeCurrent) cardTimeCurrent.textContent = formatTime(audio!.currentTime);
-      if (cardTimeTotal && audio!.duration) {
-        const remaining = audio!.duration - audio!.currentTime;
+      if (cardTimeCurrent) cardTimeCurrent.textContent = formatTime(audio.currentTime);
+      if (cardTimeTotal && audio.duration) {
+        const remaining = audio.duration - audio.currentTime;
         cardTimeTotal.textContent = '-' + formatTime(remaining);
       }
     }
 
     // ─── Playback Control ───────────────────────────────────────────────────
     function updatePlayButtonUI() {
-      const isPlaying = !audio!.paused && !audio!.ended;
+      const isPlaying = !audio.paused && !audio.ended;
       if (isPlaying) {
-        startBtn!.innerHTML = `
+        startBtn.innerHTML = `
           <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
             <rect x="6" y="4" width="4" height="16" rx="1"/>
             <rect x="14" y="4" width="4" height="16" rx="1"/>
           </svg>
         `;
       } else {
-        startBtn!.innerHTML = `
+        startBtn.innerHTML = `
           <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
             <polygon points="8 5 19 12 8 19 8 5"/>
           </svg>
@@ -458,21 +480,21 @@ export function useExperienceEngine(refs: ExperienceRefs, data: SiteData) {
     }
 
     function startPlay() {
-      startOverlay!.classList.add('playing');
-      audio!.play().catch((err) => {
+      startOverlay.classList.add('playing');
+      audio.play().catch((err) => {
         console.error('Playback failed:', err);
       });
     }
 
     function togglePlay() {
-      if (!startOverlay!.classList.contains('playing')) {
+      if (!startOverlay.classList.contains('playing')) {
         startPlay();
         return;
       }
-      if (audio!.paused) {
-        audio!.play().catch(() => {});
+      if (audio.paused) {
+        audio.play().catch(() => {});
       } else {
-        audio!.pause();
+        audio.pause();
       }
     }
 
@@ -502,23 +524,23 @@ export function useExperienceEngine(refs: ExperienceRefs, data: SiteData) {
       const x = clientX - rect.left;
       const pct = Math.max(0, Math.min(1, x / rect.width));
       if (cardProgressFill) cardProgressFill.style.width = pct * 100 + '%';
-      if (cardTimeCurrent) cardTimeCurrent.textContent = formatTime(audio!.duration ? pct * audio!.duration : 0);
-      if (cardTimeTotal && audio!.duration) {
-        const remaining = audio!.duration - (audio!.duration ? pct * audio!.duration : 0);
+      if (cardTimeCurrent) cardTimeCurrent.textContent = formatTime(audio.duration ? pct * audio.duration : 0);
+      if (cardTimeTotal && audio.duration) {
+        const remaining = audio.duration - (audio.duration ? pct * audio.duration : 0);
         cardTimeTotal.textContent = '-' + formatTime(remaining);
       }
       return pct;
     }
 
     function commitSeek(pct: number | undefined) {
-      if (pct !== undefined && audio!.duration && !isNaN(audio!.duration) && isFinite(audio!.duration)) {
-        audio!.currentTime = pct * audio!.duration;
+      if (pct !== undefined && audio.duration && !isNaN(audio.duration) && isFinite(audio.duration)) {
+        audio.currentTime = pct * audio.duration;
       }
       isSeekingProgress = false;
     }
 
     const cardMouseDown = (e: MouseEvent) => {
-      if (!audio!.src && !audio!.currentSrc) return;
+      if (!audio.src && !audio.currentSrc) return;
       e.preventDefault();
       isSeekingProgress = true;
       lastSeekPct = seekCard(e) ?? 0;
@@ -539,7 +561,7 @@ export function useExperienceEngine(refs: ExperienceRefs, data: SiteData) {
     };
 
     const cardTouchStart = (e: TouchEvent) => {
-      if (!audio!.src && !audio!.currentSrc) return;
+      if (!audio.src && !audio.currentSrc) return;
       isSeekingProgress = true;
       lastSeekPct = seekCard(e) ?? 0;
 
@@ -559,7 +581,7 @@ export function useExperienceEngine(refs: ExperienceRefs, data: SiteData) {
     };
 
     const cardClick = (e: MouseEvent) => {
-      if (!audio!.src && !audio!.currentSrc) return;
+      if (!audio.src && !audio.currentSrc) return;
       const pct = seekCard(e);
       commitSeek(pct);
     };
@@ -572,29 +594,29 @@ export function useExperienceEngine(refs: ExperienceRefs, data: SiteData) {
 
     // ─── Audio Listeners ────────────────────────────────────────────────────
     const onLoadedMetadata = () => {
-      if (cardTimeTotal) cardTimeTotal.textContent = '-' + formatTime(audio!.duration);
+      if (cardTimeTotal) cardTimeTotal.textContent = '-' + formatTime(audio.duration);
     };
 
     const onPlay = () => {
-      pauseIndicator!.classList.remove('show');
+      pauseIndicator.classList.remove('show');
       setFilmTracksPlayState('running');
       updatePlayButtonUI();
       document.body.classList.add('playing');
-      if (!startOverlay!.classList.contains('playing')) {
-        startOverlay!.classList.add('playing');
+      if (!startOverlay.classList.contains('playing')) {
+        startOverlay.classList.add('playing');
       }
-      startOverlay!.classList.remove('paused');
+      startOverlay.classList.remove('paused');
       if (!animFrameId) syncLoop();
     };
 
     const onPause = () => {
-      if (startOverlay!.classList.contains('playing')) {
-        pauseIndicator!.classList.add('show');
+      if (startOverlay.classList.contains('playing')) {
+        pauseIndicator.classList.add('show');
       }
       setFilmTracksPlayState('paused');
       updatePlayButtonUI();
       document.body.classList.remove('playing');
-      startOverlay!.classList.add('paused');
+      startOverlay.classList.add('paused');
       if (animFrameId) {
         cancelAnimationFrame(animFrameId);
         animFrameId = null;
@@ -602,9 +624,9 @@ export function useExperienceEngine(refs: ExperienceRefs, data: SiteData) {
     };
 
     const onEnded = () => {
-      pauseIndicator!.classList.remove('show');
-      startOverlay!.classList.remove('playing');
-      startOverlay!.classList.remove('paused');
+      pauseIndicator.classList.remove('show');
+      startOverlay.classList.remove('playing');
+      startOverlay.classList.remove('paused');
       setFilmTracksPlayState('paused');
       updatePlayButtonUI();
       document.body.classList.remove('playing');
@@ -663,15 +685,17 @@ export function useExperienceEngine(refs: ExperienceRefs, data: SiteData) {
       const canvas = document.createElement('canvas');
       canvas.width = 32;
       canvas.height = 32;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+      const ctxRef = canvas.getContext('2d');
+      if (!ctxRef) return;
+      const ctx: CanvasRenderingContext2D = ctxRef;
 
-      let faviconLink = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
-      if (!faviconLink) {
-        faviconLink = document.createElement('link');
-        faviconLink.rel = 'icon';
-        document.head.appendChild(faviconLink);
+      let faviconLinkRef = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
+      if (!faviconLinkRef) {
+        faviconLinkRef = document.createElement('link');
+        faviconLinkRef.rel = 'icon';
+        document.head.appendChild(faviconLinkRef);
       }
+      const faviconLink: HTMLLinkElement = faviconLinkRef;
 
       let rotation = 0;
       let heartScale = 1;
@@ -679,73 +703,73 @@ export function useExperienceEngine(refs: ExperienceRefs, data: SiteData) {
       let noteOffset = 0;
 
       function drawVinyl() {
-        ctx!.clearRect(0, 0, 32, 32);
+        ctx.clearRect(0, 0, 32, 32);
 
-        ctx!.fillStyle = '#18181c';
-        ctx!.beginPath();
-        ctx!.arc(16, 16, 15, 0, Math.PI * 2);
-        ctx!.fill();
+        ctx.fillStyle = '#18181c';
+        ctx.beginPath();
+        ctx.arc(16, 16, 15, 0, Math.PI * 2);
+        ctx.fill();
 
-        ctx!.strokeStyle = '#2d2d35';
-        ctx!.lineWidth = 1;
-        ctx!.beginPath();
-        ctx!.arc(16, 16, 11, 0, Math.PI * 2);
-        ctx!.stroke();
-        ctx!.beginPath();
-        ctx!.arc(16, 16, 8, 0, Math.PI * 2);
-        ctx!.stroke();
+        ctx.strokeStyle = '#2d2d35';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(16, 16, 11, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(16, 16, 8, 0, Math.PI * 2);
+        ctx.stroke();
 
-        ctx!.save();
-        ctx!.translate(16, 16);
-        ctx!.rotate(rotation);
+        ctx.save();
+        ctx.translate(16, 16);
+        ctx.rotate(rotation);
 
-        ctx!.fillStyle = '#ff8da1';
-        ctx!.beginPath();
-        ctx!.arc(0, 0, 5, 0, Math.PI * 2);
-        ctx!.fill();
+        ctx.fillStyle = '#ff8da1';
+        ctx.beginPath();
+        ctx.arc(0, 0, 5, 0, Math.PI * 2);
+        ctx.fill();
 
-        ctx!.fillStyle = '#ffffff';
-        ctx!.beginPath();
-        ctx!.arc(3, 0, 1, 0, Math.PI * 2);
-        ctx!.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(3, 0, 1, 0, Math.PI * 2);
+        ctx.fill();
 
-        ctx!.restore();
+        ctx.restore();
 
-        ctx!.save();
-        ctx!.translate(16, 16);
-        ctx!.scale(heartScale * 0.46, heartScale * 0.46);
+        ctx.save();
+        ctx.translate(16, 16);
+        ctx.scale(heartScale * 0.46, heartScale * 0.46);
 
-        ctx!.beginPath();
-        ctx!.moveTo(0, -6);
-        ctx!.bezierCurveTo(-6, -12, -14, -6, -14, 2);
-        ctx!.bezierCurveTo(-14, 9, -6, 15, 0, 20);
-        ctx!.bezierCurveTo(6, 15, 14, 9, 14, 2);
-        ctx!.bezierCurveTo(14, -6, 6, -12, 0, -6);
+        ctx.beginPath();
+        ctx.moveTo(0, -6);
+        ctx.bezierCurveTo(-6, -12, -14, -6, -14, 2);
+        ctx.bezierCurveTo(-14, 9, -6, 15, 0, 20);
+        ctx.bezierCurveTo(6, 15, 14, 9, 14, 2);
+        ctx.bezierCurveTo(14, -6, 6, -12, 0, -6);
 
-        ctx!.fillStyle = '#ff4b81';
-        ctx!.fill();
+        ctx.fillStyle = '#ff4b81';
+        ctx.fill();
 
-        ctx!.fillStyle = '#000000';
-        ctx!.beginPath();
-        ctx!.arc(-3, 0, 1, 0, Math.PI * 2);
-        ctx!.arc(3, 0, 1, 0, Math.PI * 2);
-        ctx!.fill();
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(-3, 0, 1, 0, Math.PI * 2);
+        ctx.arc(3, 0, 1, 0, Math.PI * 2);
+        ctx.fill();
 
-        ctx!.fillStyle = '#ff8da1';
-        ctx!.beginPath();
-        ctx!.arc(-6, 2, 1.5, 0, Math.PI * 2);
-        ctx!.arc(6, 2, 1.5, 0, Math.PI * 2);
-        ctx!.fill();
+        ctx.fillStyle = '#ff8da1';
+        ctx.beginPath();
+        ctx.arc(-6, 2, 1.5, 0, Math.PI * 2);
+        ctx.arc(6, 2, 1.5, 0, Math.PI * 2);
+        ctx.fill();
 
-        ctx!.restore();
+        ctx.restore();
 
-        ctx!.fillStyle = '#ffeb3b';
-        ctx!.font = 'bold 9px "Courier New", monospace';
+        ctx.fillStyle = '#ffeb3b';
+        ctx.font = 'bold 9px "Courier New", monospace';
         const noteX = 22 + Math.sin(noteOffset) * 2;
         const noteY = 13 - noteOffset;
-        ctx!.fillText('♪', noteX, noteY);
+        ctx.fillText('♪', noteX, noteY);
 
-        faviconLink!.href = canvas.toDataURL('image/png');
+        faviconLink.href = canvas.toDataURL('image/png');
       }
 
       function animate() {
