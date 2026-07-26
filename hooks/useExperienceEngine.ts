@@ -73,6 +73,23 @@ export function useExperienceEngine(refs: ExperienceRefs, data: SiteData) {
     const infiniteCanvas: HTMLDivElement = infiniteCanvasRef;
     const rootEl: HTMLDivElement = rootElRef;
 
+    // ─── Scroll lock, scoped to this component's actual mount lifecycle ────
+    // Previously this was `overflow: hidden` on the bare `html, body`
+    // selector in experience.css — a global stylesheet also pulled in by
+    // the Dashboard's Live Preview panel, so it locked scroll on /dashboard
+    // even when no preview was open. Applying it here means it's only ever
+    // in effect while ExperiencePlayer is actually mounted (production
+    // /[slug], /demo, and the fullscreen live-preview portal), and it's
+    // restored to whatever it was before on cleanup.
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousBodyCursor = document.body.style.cursor;
+    const previousBodyUserSelect = document.body.style.userSelect;
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    document.body.style.cursor = 'default';
+    document.body.style.userSelect = 'none';
+
     // ─── Subtitle bar (created + appended, exactly as the original did to
     // document.body — here appended to the component's own root instead, so
     // multiple mounted instances / unmounts stay clean. #subtitle-bar is
@@ -837,6 +854,11 @@ export function useExperienceEngine(refs: ExperienceRefs, data: SiteData) {
       if (animFrameId) cancelAnimationFrame(animFrameId);
       if (faviconTimeoutId) clearTimeout(faviconTimeoutId);
       if (objectUrlToRevoke) URL.revokeObjectURL(objectUrlToRevoke);
+
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+      document.body.style.cursor = previousBodyCursor;
+      document.body.style.userSelect = previousBodyUserSelect;
 
       audio.removeEventListener('loadedmetadata', onLoadedMetadata);
       audio.removeEventListener('play', onPlay);
