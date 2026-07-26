@@ -1,8 +1,7 @@
 /**
- * Typed errors for the Firebase foundation. Every failure mode in the
- * upload/generate flow maps to one of these, so calling code (the future
- * Dashboard, in Milestone 4) can switch on `error.code` instead of parsing
- * Firebase's raw error strings.
+ * Typed errors for the upload/generate flow. Every failure mode maps to one
+ * of these, so calling code (the Dashboard) can switch on `error.code`
+ * instead of parsing raw Firestore or Cloudinary error shapes.
  */
 export class AppError extends Error {
   code: string;
@@ -62,9 +61,9 @@ export class UnexpectedError extends AppError {
 }
 
 /**
- * Maps a raw Firebase error (Storage or Firestore) to one of the typed
- * errors above, based on its `.code`. Unrecognized codes fall back to
- * UnexpectedError rather than leaking Firebase's internal error shape.
+ * Maps a raw Firestore error to one of the typed errors above, based on its
+ * `.code`. Unrecognized codes fall back to UnexpectedError rather than
+ * leaking Firebase's internal error shape.
  */
 export function mapFirebaseError(err: unknown): AppError {
   const code = (err as { code?: string })?.code ?? '';
@@ -75,11 +74,29 @@ export function mapFirebaseError(err: unknown): AppError {
   if (code.includes('network-request-failed') || code === 'unavailable') {
     return new NetworkError();
   }
-  if (code.startsWith('storage/')) {
-    return new UploadFailedError(`Upload failed (${code}).`);
-  }
   if (code.startsWith('firestore/') || code === 'already-exists' || code === 'aborted') {
     return new FirestoreWriteError(`Could not save your site (${code}).`);
   }
   return new UnexpectedError();
+}
+
+/**
+ * Maps a Cloudinary unsigned-upload response to one of the typed errors
+ * above. `response` is the parsed JSON body (Cloudinary returns
+ * `{ error: { message } }` on failure); `status` is the HTTP status code,
+ * or `undefined`/`0` for a transport-level failure (no response at all).
+ */
+export function mapUploadError(response: { error?: { message?: string } } | null, status?: number): AppError {
+  const message = response?.error?.message ?? '';
+
+  if (!status) {
+    return new NetworkError();
+  }
+  if (status === 401 || status === 403 || /preset/i.test(message)) {
+    return new PermissionDeniedError('Upload was rejected — check your Cloudinary upload preset.');
+  }
+  if (status === 400) {
+    return new UploadFailedError(message || 'Upload rejected — check image format and size.');
+  }
+  return new UploadFailedError(message || `Upload failed (${status}).`);
 }
