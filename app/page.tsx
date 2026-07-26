@@ -35,10 +35,10 @@ export default function Home() {
           marginBottom: 16,
         }}
       >
-        Turn your photos and a song into a cinematic website, in minutes.
+        Create your own About You experience in just minutes.
       </h1>
       <p style={{ color: 'hsl(0, 0%, 75%)', maxWidth: 480, marginBottom: 32 }}>
-        Upload a cover, ten photos, and a name — get back a shareable link to your own interactive experience.
+        Upload a cover, ten photos, and a name — get back a beautiful cinematic website by Aliftzy × Lasky, personalized with your memories and ready to share.
       </p>
       <a
         href="/dashboard"
