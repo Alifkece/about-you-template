@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import ExperiencePlayer from '@/components/experience/ExperiencePlayer';
 import { SiteData } from '@/types/site';
 
@@ -19,6 +20,15 @@ export interface PreviewPanelProps {
  * against the real window size, not the small container, so it wouldn't
  * accurately represent production framing. A full-screen overlay guarantees
  * 100% identical behavior with zero engine changes.
+ *
+ * Bug fix: the overlay below is rendered via a portal straight to
+ * `document.body`. Without this, `position: fixed` on the overlay resolves
+ * against the nearest ancestor that establishes a new containing block
+ * (e.g. any parent with a CSS `transform`, `filter`, or `perspective` —
+ * common on animated dashboard panels), which shrinks the "full-screen"
+ * overlay down to that ancestor's box instead of the real viewport. A
+ * portal renders this subtree as a direct child of <body>, so `fixed`
+ * always means the actual screen, regardless of what wraps PreviewPanel.
  */
 export default function PreviewPanel({ data, isComplete }: PreviewPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -38,21 +48,24 @@ export default function PreviewPanel({ data, isComplete }: PreviewPanelProps) {
         ▶ Open live preview
       </button>
 
-      {isOpen && (
-        <div className="fixed inset-0 z-50">
-          <ExperiencePlayer data={data} />
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsOpen(false);
-            }}
-            className="fixed right-4 top-4 z-[60] rounded-full bg-black/60 px-3 py-1.5 font-mono text-xs text-white/85 backdrop-blur-sm hover:bg-black/80"
-            aria-label="Exit preview"
-          >
-            ✕ Exit preview
-          </button>
-        </div>
-      )}
+      {isOpen &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div className="fixed inset-0 z-50">
+            <ExperiencePlayer data={data} />
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsOpen(false);
+              }}
+              className="fixed right-4 top-4 z-[60] rounded-full bg-black/60 px-3 py-1.5 font-mono text-xs text-white/85 backdrop-blur-sm hover:bg-black/80"
+              aria-label="Exit preview"
+            >
+              ✕ Exit preview
+            </button>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
