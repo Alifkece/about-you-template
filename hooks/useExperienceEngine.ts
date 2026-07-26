@@ -196,7 +196,7 @@ export function useExperienceEngine(refs: ExperienceRefs, data: SiteData) {
       const driftX = Math.sin(t * 0.18) * 1.0;
       const driftY = Math.sin(t * 0.13) * 0.7;
 
-      infiniteCamera.style.transform =
+      infiniteCamera!.style.transform =
         `translate3d(${(camX + driftX).toFixed(2)}px,${(camY + driftY).toFixed(2)}px,0) ` +
         `rotate(${camRot.toFixed(3)}deg)`;
     }
