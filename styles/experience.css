@@ -24,14 +24,20 @@
 
 html, body {
   width: 100%; height: 100%;
-  overflow: hidden;
   font-family: var(--font-body);
   background: var(--bg-dark);
   color: var(--text-100);
-  cursor: default;
   -webkit-font-smoothing: antialiased;
-  user-select: none;
 }
+
+/* overflow: hidden / cursor: default / user-select: none used to live here
+   on the bare html/body selector. That's a global stylesheet, and this file
+   is imported by ExperiencePlayer.tsx — which the Dashboard's Live Preview
+   panel also imports — so it was locking scroll on /dashboard too, even
+   when no preview was open. Scroll-lock now happens imperatively in
+   useExperienceEngine.ts, only while ExperiencePlayer is actually mounted
+   (production /[slug], /demo, and the fullscreen live-preview portal),
+   and is restored on unmount. Nothing about /demo or /[slug] changes. */
 
 /* ═══════════════════════════════════════════════
    CINEMATIC BACKGROUND & OVERLAPPING FILM STRIPS
