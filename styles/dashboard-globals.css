@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Design tokens (see tailwind.config.js `db` palette):
+    bg      #08070c        near-black, warmer than pure black
+    surface rgba glass      frosted panels over the bg
+    violet  hsl(280,60%,65%) — same accent as the live experience itself,
+                               so the *tool* and the *thing it makes* feel
+                               like one continuous world
+    amber   hsl(28,85%,62%) — a projector-bulb warmth, used only for the
+                               single primary action (Generate), so it
+                               never competes with the violet accent
+  Type: Playfair Display (headings) / Inter (UI) / Space Mono (slug + data)
+  Signature: upload slots are styled as film frames with sprocket-hole
+  edges, echoing the cinematic experience's own film-strip motif — the
+  dashboard looks like a contact sheet for the movie it's building.
+*/
+
+.db-glass {
+  background: rgba(20, 18, 28, 0.55);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.db-frame {
+  position: relative;
+  background: rgba(20, 18, 28, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.db-frame::before,
+.db-frame::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.16) 0px,
+    rgba(255, 255, 255, 0.16) 4px,
+    transparent 4px,
+    transparent 10px
+  );
+  z-index: 2;
+}
+
+.db-frame::before {
+  top: 0;
+}
+
+.db-frame::after {
+  bottom: 0;
+}
+
+.db-frame-slot {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .db-glass,
+  .db-frame {
+    transition: none !important;
+  }
+}

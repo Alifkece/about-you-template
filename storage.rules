@@ -1,0 +1,33 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isValidUpload() {
+      return request.resource.size < 5 * 1024 * 1024 // 5MB, matches utils/validateImage.ts
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    match /sites/{slug}/{allPaths=**} {
+      // Public assets — anyone can view a generated site's images.
+      allow read: if true;
+
+      // Anyone can upload (v1 has no auth), but only to a path that doesn't
+      // already hold an object, and only if it's a valid image under 5MB.
+      // `resource == null` means "this object doesn't exist yet" — this is
+      // the Storage-side mirror of Firestore's "don't overwrite on slug
+      // conflict" rule.
+      allow create: if resource == null && isValidUpload();
+
+      // v1 assets are immutable once uploaded. To support authenticated
+      // re-uploads/edits later, without restructuring the folder layout:
+      //   allow update: if request.auth != null
+      //                 && request.auth.uid == <owner, via a custom claim
+      //                    or a matching Firestore lookup> && isValidUpload();
+      //   allow delete: if request.auth != null
+      //                 && request.auth.uid == <owner>;
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}

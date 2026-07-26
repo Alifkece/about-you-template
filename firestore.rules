@@ -1,0 +1,41 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isValidSiteDoc(slug, data) {
+      return data.slug == slug
+        && data.cover is string && data.cover.size() > 0
+        && data.photos is list && data.photos.size() == 10
+        && data.createdAt == request.time
+        && data.updatedAt == request.time;
+    }
+
+    match /sites/{slug} {
+      // Public sites — anyone can view a generated page.
+      allow read: if true;
+
+      // Anyone can create a new site (v1 has no auth), but ONLY if:
+      //  - the document doesn't already exist (no overwriting on slug conflict —
+      //    this is the server-side backstop for services/firebase/firestore.ts's
+      //    transaction, in case rules are ever hit directly), and
+      //  - the payload matches the expected schema.
+      allow create: if !exists(/databases/$(database)/documents/sites/$(slug))
+                    && isValidSiteDoc(slug, request.resource.data);
+
+      // v1 sites are immutable once created (this IS the "no overwrite"
+      // requirement). To support authenticated editing later, without
+      // restructuring the schema:
+      //   1. Add `ownerId: request.auth.uid` as a required field in
+      //      isValidSiteDoc (set at creation time by the client).
+      //   2. Replace the two lines below with:
+      //        allow update: if request.auth != null
+      //                      && request.auth.uid == resource.data.ownerId
+      //                      && isValidSiteDoc(slug, request.resource.data);
+      //        allow delete: if request.auth != null
+      //                      && request.auth.uid == resource.data.ownerId;
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}
