@@ -214,7 +214,7 @@ export function useExperienceEngine(refs: ExperienceRefs, data: SiteData) {
     let lyrics: LyricWord[] = [];
 
     function buildScenes() {
-      infiniteCanvas.innerHTML = '';
+      infiniteCanvas!.innerHTML = '';
       scenes = [];
       subtitleSpans = [];
 
@@ -285,7 +285,7 @@ export function useExperienceEngine(refs: ExperienceRefs, data: SiteData) {
           sceneEl.appendChild(photoWrap);
           sceneEl.appendChild(lyricEl);
         }
-        infiniteCanvas.appendChild(sceneEl);
+        infiniteCanvas!.appendChild(sceneEl);
 
         scenes.push({
           idx: sceneIdx,
@@ -309,8 +309,8 @@ export function useExperienceEngine(refs: ExperienceRefs, data: SiteData) {
       });
 
       const totalH = scenes.length * SCENE_GAP_Y + vH;
-      infiniteCanvas.style.height = `${totalH}px`;
-      infiniteCanvas.style.width = `${vW * 1.8}px`;
+      infiniteCanvas!.style.height = `${totalH}px`;
+      infiniteCanvas!.style.width = `${vW * 1.8}px`;
     }
 
     function setFilmTracksPlayState(state: 'running' | 'paused') {
