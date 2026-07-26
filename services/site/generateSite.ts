@@ -1,7 +1,7 @@
 import { assertValidSlug, slugify } from '@/utils/slugify';
 import { assertValidImage } from '@/utils/validateImage';
 import { compressImage } from '@/utils/compressImage';
-import { uploadSiteAssets } from '@/services/firebase/storage';
+import { uploadSiteAssets } from '@/services/cloudinary/upload';
 import { createSiteIfAvailable, checkSlugAvailable } from '@/services/firebase/firestore';
 import { AppError, SlugTakenError, UnexpectedError } from '@/types/errors';
 import { GenerationProgress } from '@/types/dashboard';
@@ -27,7 +27,7 @@ export type OnGenerateProgress = (progress: GenerationProgress) => void;
  *   1. Slugify + validate the name
  *   2. Validate every image (type + size)
  *   3. Compress every image client-side
- *   4. Upload all 11 assets to Storage
+ *   4. Upload all 11 assets to Cloudinary
  *   5. Atomically create the Firestore doc (no-overwrite)
  *
  * Every failure mode throws a typed AppError subclass (see types/errors.ts)
