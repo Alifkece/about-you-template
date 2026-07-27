@@ -38,7 +38,7 @@ export default function Home() {
         Create your own About You experience in just minutes.
       </h1>
       <p style={{ color: 'hsl(0, 0%, 75%)', maxWidth: 480, marginBottom: 32 }}>
-        Upload a cover, ten photos, and a name — get back a beautiful cinematic website by Aliftzy × Lasky, personalized with your memories and ready to share.
+        Upload a cover, ten photos, and a name — get back a beautiful cinematic website by Aliftzy × rvldoputra, personalized with your memories and ready to share.
       </p>
       <a
         href="/dashboard"
